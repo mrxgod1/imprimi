@@ -428,6 +428,12 @@
                 const grid = document.querySelector("#problem .framer-i49pa6");
                 if (!grid || !panel) return;
 
+                grid.querySelectorAll("h2").forEach(heading => {
+                    if (heading.textContent.trim().toLocaleLowerCase("pt-BR") === "imprimi") {
+                        heading.textContent = "Impressão";
+                    }
+                });
+
                 if (panel.previousElementSibling !== grid) {
                     grid.insertAdjacentElement("afterend", panel);
                 }
