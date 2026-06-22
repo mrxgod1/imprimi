@@ -5,6 +5,16 @@
 	<script>try{if(localStorage.get("__framer_force_showing_editorbar_since")){const n=document.createElement("link");n.rel = "modulepreload";n.href="https://framer.com/edit/init.mjs";document.head.appendChild(n)}}catch(e){}</script>
 	<!-- Start of headStart -->
     <style id="product-details-styles">
+        :root {
+            /* Altere somente este valor para mudar a cor do rodapé. */
+            --footer-background-color: #ffdb58;
+        }
+
+        .framer-8qrgev-container,
+        .framer-8qrgev-container footer {
+            background-color: var(--footer-background-color) !important;
+        }
+
         #problem .product-card-trigger {
             border-radius: 48px;
             cursor: pointer;
@@ -355,6 +365,11 @@
 #__framer-editorbar.status_measuring {
     clip-path: unset;
 }
+
+.framer-8qrgev-container {
+    background-color: rgb(255, 219, 88)
+}
+
 </style></head>
 <body>
 	<script async="" src="https://events.framer.com/script?v=2" data-fid="b146fb629625e01fefe07e1c6524bfeea5b7fc00ac2d50b280e184bfaae7120d" data-no-nt=""></script>
@@ -407,18 +422,23 @@
                 }
             ];
 
+            const panel = document.getElementById("product-details");
+
             const initProductDetails = () => {
                 const grid = document.querySelector("#problem .framer-i49pa6");
-                const panel = document.getElementById("product-details");
-                if (!grid || !panel || grid.dataset.productDetailsReady) return;
+                if (!grid || !panel) return;
 
+                if (panel.previousElementSibling !== grid) {
+                    grid.insertAdjacentElement("afterend", panel);
+                }
+
+                if (grid.dataset.productDetailsReady) return;
                 grid.dataset.productDetailsReady = "true";
-                grid.insertAdjacentElement("afterend", panel);
 
                 const cards = Array.from(grid.querySelectorAll("[data-code-component-plugin-id]"));
-                const title = document.getElementById("product-details-title");
-                const description = document.getElementById("product-details-description");
-                const meta = document.getElementById("product-details-meta");
+                const title = panel.querySelector("#product-details-title");
+                const description = panel.querySelector("#product-details-description");
+                const meta = panel.querySelector("#product-details-meta");
 
                 const closePanel = () => {
                     panel.hidden = true;
@@ -476,14 +496,28 @@
                     }, { capture: true });
                 });
 
-                panel.querySelector(".product-details__close").addEventListener("click", closePanel);
+                panel.querySelector(".product-details__close").onclick = closePanel;
             };
 
-            // O bundle remoto do Framer pode hidratar e reconstruir a seção depois
-            // do DOMContentLoaded. Esperar o carregamento completo preserva os eventos.
-            document.readyState === "complete"
-                ? setTimeout(initProductDetails, 0)
-                : window.addEventListener("load", initProductDetails, { once: true });
+            // O HTML já existe neste ponto: ativa os cards imediatamente, sem
+            // aguardar imagens, fontes ou o bundle remoto do Framer.
+            initProductDetails();
+
+            // Se a hidratação do Framer recriar a seção, conecta novamente o
+            // mesmo painel e os eventos sem introduzir atraso perceptível.
+            let updateScheduled = false;
+            const observer = new MutationObserver(() => {
+                if (updateScheduled) return;
+                updateScheduled = true;
+                requestAnimationFrame(() => {
+                    updateScheduled = false;
+                    initProductDetails();
+                });
+            });
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
         })();
     </script>
     
